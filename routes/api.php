@@ -15,4 +15,4 @@ use App\Http\Controllers\Api\V1\ProductRecommendationController;
 */
 
 Route::get('products/recommended/{city}', [ProductRecommendationController::class, 'dailyWeatherConditionRecommendations'])
-    ->where(['city' => '[a-z]+']);
+    ->where(['city' => '^[a-z]{3,20}$']);
