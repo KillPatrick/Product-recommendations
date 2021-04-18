@@ -28,20 +28,21 @@ class ProductRecommendationController extends Controller
             'days' => 'integer|min:1|max:5'
         ]);
 
-        if($request->has('limit')){
+        if ($request->has('limit')) {
             $this->limit = $request->limit;
         }
 
-        if($request->has('days')){
+        if ($request->has('days')) {
             $this->days = $request->days;
         }
 
         $dailyWeatherConditions = $this->weatherData->getDailyWeatherConditions($city, $this->days);
-        $dailyRecommendations = collect(['city' => $city]);
         $recommendations = new Collection();
 
-        foreach ($dailyWeatherConditions as $date => $dailyWeatherCondition) {
-            $products = cache()->remember($dailyWeatherCondition . $date, 300, function () use ($dailyWeatherCondition) {
+        foreach ($dailyWeatherConditions['data'] as $date => $dailyWeatherCondition) {
+            $cacheName = $this->limit . $city . $date . $dailyWeatherCondition . $this->limit;
+
+            $products = cache()->remember($cacheName, 300, function () use ($dailyWeatherCondition) {
                 return Product::whereHas('weatherConditions', function ($query) use ($dailyWeatherCondition) {
                     $query->where('name', $dailyWeatherCondition);
                 })->inRandomOrder()->limit($this->limit)->get(['name', 'sku', 'price']);
@@ -52,10 +53,12 @@ class ProductRecommendationController extends Controller
                 'date' => $date,
                 'products' => $products,
             ]);
-
         }
 
-        $dailyRecommendations->put('recommendations', $recommendations);
-        return response()->json($dailyRecommendations);
+        return response()->json(collect([
+            'source' => $dailyWeatherConditions['source'],
+            'city' => $city,
+            'recommendations' => $recommendations,
+        ]));
     }
 }
