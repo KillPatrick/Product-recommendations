@@ -13,10 +13,10 @@ class MeteoWeatherConditionRepository implements WeatherConditionInterface
     public function getDailyWeatherConditions($city, $days)
     {
         $weatherApiData = $this->getWeatherApiData($city);
-        $dailyWeatherConditionsArray = new Collection();
+        $dailyWeatherConditions = new Collection();
 
         for ($day = 1; $day <= $days; $day++) {
-            $weatherConditionsArray = new Collection();
+            $weatherConditions = new Collection();
             $startTime = Carbon::createFromTimeString('8:00')->addDays($day);
             $endTime = Carbon::createFromTimeString('22:00')->addDays($day);
             $forecastDate = '';
@@ -25,14 +25,14 @@ class MeteoWeatherConditionRepository implements WeatherConditionInterface
                 $forecastTimeUtc = Carbon::createFromFormat('Y-m-d H:i:s', $forecastTimestamp['forecastTimeUtc']);
 
                 if ($forecastTimeUtc->between($startTime, $endTime)) {
-                    $weatherConditionsArray->push($forecastTimestamp['conditionCode']);
                     $forecastDate = $forecastTimeUtc->format('Y-m-d');
+                    $weatherConditions->push($forecastTimestamp['conditionCode']);
                 }
 
             }
 
-            if ($weatherConditionsArray->count()) {
-                $dailyWeatherConditionsArray->put($forecastDate, $weatherConditionsArray->countBy()
+            if ($weatherConditions->count()) {
+                $dailyWeatherConditions->put($forecastDate, $weatherConditions->countBy()
                     ->sortDesc()
                     ->keys()
                     ->first()
@@ -40,7 +40,10 @@ class MeteoWeatherConditionRepository implements WeatherConditionInterface
             }
         }
 
-        return $dailyWeatherConditionsArray;
+        return collect([
+            'source' => 'LHMT',
+            'data' => $dailyWeatherConditions,
+        ]);
     }
 
     public function getWeatherApiData($city)
