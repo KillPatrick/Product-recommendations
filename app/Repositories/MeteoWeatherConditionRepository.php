@@ -10,6 +10,11 @@ use GuzzleHttp;
 
 class MeteoWeatherConditionRepository implements WeatherConditionInterface
 {
+    /**
+     * @param $city
+     * @param $days
+     * @return Collection
+     */
     public function getDailyWeatherConditions($city, $days)
     {
         $weatherApiData = $this->getWeatherApiData($city);
@@ -46,6 +51,11 @@ class MeteoWeatherConditionRepository implements WeatherConditionInterface
         ]);
     }
 
+    /**
+     * @param $city
+     * @return mixed
+     * @throws \Exception
+     */
     public function getWeatherApiData($city)
     {
         return cache()->remember($city, 300, function () use ($city) {

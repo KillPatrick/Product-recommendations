@@ -21,6 +21,12 @@ class ProductRecommendationController extends Controller
         $this->weatherData = $weatherData;
     }
 
+    /**
+     * @param Request $request
+     * @param string $city
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
     public function dailyWeatherConditionRecommendations(Request $request, $city)
     {
         $request->validate([
