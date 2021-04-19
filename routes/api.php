@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\ProductRecommendationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +14,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::get('products/recommended/{city}', [ProductRecommendationController::class, 'dailyWeatherConditionRecommendations'])
+    ->where(['city' => '^[a-z]{3,20}$']);
