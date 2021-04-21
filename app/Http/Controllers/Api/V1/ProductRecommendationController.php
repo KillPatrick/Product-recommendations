@@ -43,10 +43,15 @@ class ProductRecommendationController extends Controller
         }
 
         $dailyWeatherConditions = $this->weatherData->getDailyWeatherConditions($city, $this->days);
+
+        if(isset($dailyWeatherConditions['error'])){
+            return response()->json($dailyWeatherConditions, $dailyWeatherConditions['error']['code']);
+        }
+
         $recommendations = new Collection();
 
         foreach ($dailyWeatherConditions['data'] as $date => $dailyWeatherCondition) {
-            $cacheName = $this->limit . $city . $date . $dailyWeatherCondition . $this->limit;
+            $cacheName = $city . $date . $dailyWeatherCondition . $this->limit;
 
             $products = cache()->remember($cacheName, 300, function () use ($dailyWeatherCondition) {
                 return Product::whereHas('weatherConditions', function ($query) use ($dailyWeatherCondition) {
