@@ -5,35 +5,29 @@ namespace App\Http\Utilities;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
-use RuntimeException;
 
 class ExternalApi
 {
+    private $guzzle;
+    private $url;
+
+    public function __construct(Client $guzzle, $url) {
+        $this->guzzle = new $guzzle();
+        $this->url = $url;
+    }
     /**
-     * @param $url
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function get($url)
+    public function get()
     {
-        $client = new Client();
+        $client = $this->guzzle;
 
         try {
-            $guzzleResponse = $client->request('GET', $url);
-            $response = json_decode($guzzleResponse->getBody()->getContents(), true);
-
-            if (JSON_ERROR_NONE !== json_last_error()) {
-                throw new RuntimeException('Unable to parse response body into JSON: ' . json_last_error());
-            }
+            $guzzleResponse = $client->request('GET', $this->url);
+            $response = (string) $guzzleResponse->getBody();
         } catch (ClientException $exception) {
-            $response = json_decode($exception->getResponse()->getBody(), true);
-
-            if (JSON_ERROR_NONE !== json_last_error()) {
-                $response['error'] = [
-                    'code' => $exception->getCode(),
-                    'message' => (string)$exception->getResponse()->getBody()
-                ];
-            }
+            $response = (string) $exception->getResponse()->getBody();
         } catch (RequestException $exception) {
             throw $exception;
         }
